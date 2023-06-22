@@ -12,39 +12,40 @@ print(cur.fetchall())
 def login():
     correctP = False
     correctU = False
-    for user in cur.execute("SELECT email FROM logins").fetchall():
-        if user[0] == entryUser.get():
-            correctU = True
-    for password in cur.execute("SELECT password FROM logins").fetchall():
-        if password[0] == entryPass.get():
-            correctP = True
-    if correctP and correctU == True:
-        loginframe.grid_forget()
-    else:
-        labelFail.grid()
+    try:
+        for user in cur.execute("SELECT email FROM logins").fetchall():
+            if user[0] == entryUser.get():
+                correctU = True
+        for password in cur.execute("SELECT password FROM logins").fetchall():
+            if password[0] == entryPass.get():
+                correctP = True
+        if correctP and correctU == True:
+            loginFrame.grid_forget()
+        else:
+            labelFail.grid()
+    finally:
+        cur.execute("CREATE TABLE logins(email,password)")
+        login()
 
 # Creates accounts for EduBoard - To be configured into administrator settings.
 
 def create_account():
-    loginFrame.grid_remove()
-    signupFrame = LabelFrame(root,text="Login", font=("Coolvetica", 24),labelanchor='n',bg='#717171')
-    signupFrame.grid(column=0,row=1,sticky='n')
-    labelUser = Label(signupFrame,text="Email",justify='center',bg='#717171')
-    labelUser.grid(column=0,row=2)
-    entryUser = Entry(signupFrame,justify='center')
-    entryUser.grid(column=0,row=3)
-    labelPass = Label(signupFrame,text="Password",bg='#717171')
-    labelPass.grid(column=0,row=4)
-    entryPass = Entry(signupFrame,show='*',justify='center')
-    entryPass.grid(column=0,row=5)
-    buttonSignup = Button(signupFrame,text="Login",command=login,bg='#717171')
-    buttonSignup.grid(column=0,row=7)
-    labelFail = Label(signupFrame, text="Wrong email or password. \nPlease try again or contact your administrator.",fg='red',bg='#717171')
+    dupEmail = False
+    dupPass = False
+    for user in cur.execute("SELECT email FROM logins").fetchall():
+        if user[0] == entryUser.get():
+            dupEmail = True
+    for password in cur.execute("SELECT password FROM logins").fetchall():
+        if password[0] == entryPass.get():
+            dupPass = True
+    
+
+
 
 
 # Defines the root window -- Configures root window
 root = Tk()
-root.rowconfigure(3,weight=1)
+root.rowconfigure(6,weight=1)
 root.columnconfigure(0,weight=1)
 root.minsize(width=600, height=400)
 root.maxsize(width=1200, height=800)
@@ -83,5 +84,6 @@ labelFail = Label(loginFrame, text="Wrong email or password. \nPlease try again 
 
 buttonSignup = Button(root, text='Sign up', command=create_account, bg='#717171')
 buttonSignup.grid(column=0,row=2,pady=10)
+
 
 root.mainloop()
