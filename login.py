@@ -3,7 +3,7 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 import sqlite3
 import os
-
+import sys
 
 
 # Connects to the sqlite3 database file; this file is automatically encrypted.
@@ -26,7 +26,7 @@ def login():
         if password[0] == entryPass.get():
             correctP = True
     if correctP and correctU == True:
-        run_landing
+        os.system('landing.py')
     else:
         messagebox.showerror("EduBoard","Wrong email or password. \nPlease try again or contact your administrator.")
     
@@ -52,8 +52,6 @@ def create_account():
                         """)
         con.commit()
 
-def run_landing():
-    os.system('landing.py')
 
 # Defines the root window -- Configures root window
 
