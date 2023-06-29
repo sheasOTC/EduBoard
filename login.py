@@ -6,7 +6,7 @@ import sqlite3
 
 con = sqlite3.connect("logins.db")
 cur = con.cursor()
-print(cur.fetchone())
+print(cur.fetchall())
 
 
 # Login Function -- Validates information retrived from entries in the root 
@@ -23,7 +23,7 @@ def login():
         loginFrame.grid_forget()
         buttonSignup.grid_forget()
     else:
-        labelFail.grid()
+        return "Wrong email or password. \nPlease try again or contact your administrator."
     
 # Creates accounts for EduBoard - To be configured into administrator settings.
 
@@ -90,7 +90,8 @@ entryPass = Entry(loginFrame,show='*',justify='center')
 entryPass.grid(column=0,row=5)
 buttonLogin = Button(loginFrame,text="Login",command=login,bg='#717171')
 buttonLogin.grid(column=0,row=7)
-labelFail = Label(loginFrame, text="Wrong email or password. \nPlease try again or contact your administrator.",fg='red',bg='#717171')
+labelFail = Label(loginFrame, text=login,fg='red',bg='#717171')
+
 
 buttonSignup = Button(root, text='Sign up', command=create_account, bg='#717171')
 buttonSignup.grid(column=0,row=2,pady=10)
