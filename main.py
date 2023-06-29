@@ -3,44 +3,54 @@ from PIL import ImageTk, Image
 import sqlite3
 
 # Connects to the sqlite3 database file; this file is automatically encrypted.
+
 con = sqlite3.connect("logins.db")
 cur = con.cursor()
-print(cur.fetchall())
+print(cur.fetchone())
 
 
 # Login Function -- Validates information retrived from entries in the root 
 def login():
     correctP = False
     correctU = False
-    try:
-        for user in cur.execute("SELECT email FROM logins").fetchall():
-            if user[0] == entryUser.get():
-                correctU = True
-        for password in cur.execute("SELECT password FROM logins").fetchall():
-            if password[0] == entryPass.get():
-                correctP = True
-        if correctP and correctU == True:
-            loginFrame.grid_forget()
-        else:
-            labelFail.grid()
-    finally:
-        cur.execute("CREATE TABLE logins(email,password)")
-        login()
-
+    for user in cur.execute("SELECT emails FROM logins").fetchall():
+        if user[0] == entryUser.get():
+            correctU = True
+    for password in cur.execute("SELECT passwords FROM logins").fetchall():
+        if password[0] == entryPass.get():
+            correctP = True
+    if correctP and correctU == True:
+        loginFrame.grid_forget()
+        buttonSignup.grid_forget()
+    else:
+        labelFail.grid()
+    
 # Creates accounts for EduBoard - To be configured into administrator settings.
 
 def create_account():
+    labelFail.grid_forget()
     dupEmail = False
     dupPass = False
-    for user in cur.execute("SELECT email FROM logins").fetchall():
+    for user in cur.execute("SELECT emails FROM logins").fetchall():
         if user[0] == entryUser.get():
             dupEmail = True
-    for password in cur.execute("SELECT password FROM logins").fetchall():
-        if password[0] == entryPass.get():
+    for password in cur.execute("SELECT passwords FROM logins").fetchall():
+        if password[0] == entryPass.get() :
             dupPass = True
+    if dupEmail or dupPass:
+        labelFail.grid()
     
+    if entryUser.get() == "" or entryPass.get() == "":
+        print(entryUser.get())
+    else:
+        cur.execute(f"""INSERT INTO logins VALUES
+                        ('{entryUser.get()}', '{entryPass.get()}')
+                        """)
+        con.commit()
+        print(cur.fetchall())
 
 
+    
 
 
 # Defines the root window -- Configures root window
@@ -84,6 +94,7 @@ labelFail = Label(loginFrame, text="Wrong email or password. \nPlease try again 
 
 buttonSignup = Button(root, text='Sign up', command=create_account, bg='#717171')
 buttonSignup.grid(column=0,row=2,pady=10)
+
 
 
 root.mainloop()
