@@ -100,6 +100,7 @@ class Signup:
                 dupPass = True
         if dupEmail or dupPass:
             messagebox.showerror('EduBoard', 'An account with this email already exists. \nPlease try again or contact your administrator.')
+
         if self.entryUser.get() == "" or self.entryUser.get() == "":
             print(self.entryUser.get())
         else:
