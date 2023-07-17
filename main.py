@@ -3,6 +3,7 @@ from tkinter import messagebox
 import sqlite3
 
 
+
 con = sqlite3.connect("logins.db")
 cur = con.cursor()
 
@@ -100,9 +101,12 @@ class Signup:
                 dupPass = True
         if dupEmail or dupPass:
             messagebox.showerror('EduBoard', 'An account with this email already exists. \nPlease try again or contact your administrator.')
-
-        if self.entryUser.get() == "" or self.entryUser.get() == "":
-            print(self.entryUser.get())
+        elif self.entryPass.get() == "" and self.entryUser.get() == "":
+                messagebox.showerror("EduBoard","Cannot leave password and email empty. \nPlease try again or contact your administrator.")
+        elif self.entryUser.get() == "":
+            messagebox.showerror("EduBoard","Cannot leave email empty. \nPlease try again or contact your administrator.")
+        elif self.entryPass.get() == "":
+            messagebox.showerror("EduBoard","Cannot leave password empty. \nPlease try again or contact your administrator.")
         else:
             cur.execute(f"""INSERT INTO logins VALUES
                             ('{self.entryUser.get()}', '{self.entryUser.get()}')
