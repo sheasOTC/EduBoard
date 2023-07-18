@@ -13,4 +13,6 @@ landing.title("EduBoard - Main")
 eduboard = Label(landing,text="EduBoard", font=("Comic Sans MS", 48),bg='#717171')
 eduboard.grid(column=0,row=0,sticky='n')
 
+
+
 landing.mainloop()

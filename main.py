@@ -18,7 +18,7 @@ class Login:
         master.configure(bg='#717171')
         master.title("EduBoard - Login")
 
-        eduboard = Label(self.master,text="EduBoard", font=("Comic Sans MS", 48),bg='#717171')
+        eduboard = Label(self.master,text="EduBoard", font=("Comic Sans MS", 48),bg='#717171', )
         eduboard.grid(column=0,row=0,sticky='n')
 
         self.loginFrame = LabelFrame(self.master,text="Login", font=("Coolvetica", 24),labelanchor='n',bg='#717171')
@@ -33,14 +33,14 @@ class Login:
         self.entryPass.grid(column=0,row=5)
         self.buttonLogin = Button(self.loginFrame,text="Login",command=self.validate_login,bg='#717171')
         self.buttonLogin.grid(column=0,row=7)
-
         
-        buttonSignup = Button(self.master, text='Sign up', command=self.open_signup, bg='#717171')
-        buttonSignup.grid(column=0,row=2,pady=10)
+        self.buttonSignuppage = Button(self.master, text='Sign up', command=self.open_signup, bg='#717171')
+        self.buttonSignuppage.grid(column=0,row=2,pady=10)
 
     def validate_login(self):
         correctP = False
         correctU = False
+
         for user in cur.execute("SELECT emails FROM logins").fetchall():
             if user[0] == self.entryUser.get():
                 correctU = True
@@ -60,8 +60,9 @@ class Login:
                 messagebox.showerror("EduBoard","Wrong email or password. \nPlease try again or contact your administrator.")
 
     def open_signup(self):
-        self.signupWindow = Toplevel(self.master)
-        self.app = Signup(self.signupWindow)
+        self.loginFrame.destroy()
+        self.buttonSignuppage.destroy()
+        self.app = Signup(self.master)
         
 
 class Signup:
@@ -87,8 +88,10 @@ class Signup:
         self.labelPass.grid(column=0,row=4)
         self.entryPass = Entry(self.loginFrame,show='*',justify='center')
         self.entryPass.grid(column=0,row=5)
-        self.buttonLogin = Button(self.loginFrame,text="Sign Up",command=self.create_account,bg='#717171')
-        self.buttonLogin.grid(column=0,row=7)
+        self.buttonSignup = Button(self.loginFrame,text="Sign Up",command=self.create_account,bg='#717171')
+        self.buttonSignup.grid(column=0,row=6)
+
+        self.buttonLoginpage
 
     def create_account(self):
         dupEmail = False
@@ -118,8 +121,9 @@ class Signup:
 
 def main(): 
     root = Tk()
-    app = Login(root)
+    Login(root)
     root.mainloop()
+    
 
 if __name__ == '__main__':
     main()
