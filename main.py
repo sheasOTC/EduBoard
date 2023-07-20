@@ -13,15 +13,14 @@ class Login:
         self.master = master
         master.rowconfigure(6,weight=1)
         master.columnconfigure(0,weight=1)
-        master.minsize(width=600, height=400)
-        master.maxsize(width=1200, height=800)
+        self.master.minsize(width=1200, height=800)
         master.configure(bg='#717171')
         master.title("EduBoard - Login")
 
-        eduboard = Label(self.master,text="EduBoard", font=("Comic Sans MS", 48),bg='#717171', )
-        eduboard.grid(column=0,row=0,sticky='n')
+        self.eduboard = Label(self.master,text="EduBoard", font=("Comic Sans MS", 48),bg='#717171', )
+        self.eduboard.grid(column=0,row=0,sticky='n')
 
-        self.loginFrame = LabelFrame(self.master,text="Login", font=("Coolvetica", 24),labelanchor='n',bg='#717171')
+        self.loginFrame = LabelFrame(self.master,text="Login", font=("Coolvetica", 36),labelanchor='n',bg='#717171')
         self.loginFrame.grid(column=0,row=1,sticky='n')
         self.labelUser = Label(self.loginFrame,text="Email",justify='center',bg='#717171')
         self.labelUser.grid(column=0,row=2)
@@ -38,17 +37,21 @@ class Login:
         self.buttonSignuppage.grid(column=0,row=2,pady=10)
 
     def validate_login(self):
-        correctP = False
-        correctU = False
+        correctPassword = False
+        correctUsername = False
 
         for user in cur.execute("SELECT emails FROM logins").fetchall():
             if user[0] == self.entryUser.get():
-                correctU = True
+                correctUsername = True
         for password in cur.execute("SELECT passwords FROM logins").fetchall():
             if password[0] == self.entryPass.get():
-                correctP = True
-        if correctP and correctU == True:
-            self.master.quit()
+                correctPassword = True
+        if correctPassword and correctUsername == True:
+            username = self.entryUser.get()
+            self.eduboard.destroy()
+            self.buttonSignuppage.destroy()
+            self.loginFrame.destroy()
+            Landing(self.master,username)
         else:
             if self.entryPass.get() == "" and self.entryUser.get() == "":
                 messagebox.showerror("EduBoard","Cannot leave password and email empty. \nPlease try again or contact your administrator.")
@@ -70,8 +73,7 @@ class Signup:
         self.master = master
         master.rowconfigure(6,weight=1)
         master.columnconfigure(0,weight=1)
-        master.minsize(width=600, height=400)
-        master.maxsize(width=1200, height=800)
+        self.master.minsize(width=1200, height=800)
         master.configure(bg='#717171')
         master.title("EduBoard - Signup")
 
@@ -91,7 +93,8 @@ class Signup:
         self.buttonSignup = Button(self.loginFrame,text="Sign Up",command=self.create_account,bg='#717171')
         self.buttonSignup.grid(column=0,row=6)
 
-        self.buttonLoginpage
+        self.buttonLoginpage = Button(self.master, text="Go Back", command=self.login_page)
+        self.buttonLoginpage.grid(row=2,pady=10,column=0)
 
     def create_account(self):
         dupEmail = False
@@ -115,15 +118,53 @@ class Signup:
                             ('{self.entryUser.get()}', '{self.entryUser.get()}')
                             """)
             con.commit()
-            self.master.destroy()
+            self.login_page()
             messagebox.showinfo("EduBoard", "Successfully Created Account.")
+    
+    def login_page(self):
+        self.loginFrame.destroy()
+        self.buttonLoginpage.destroy()
+        Login(self.master)
+
+class Landing:
+    def __init__(self, master, user):
+        self.master = master
+
+        self.master.rowconfigure(6,weight=1)
+        self.master.columnconfigure(2,weight=1)
+        self.master.minsize(width=1200, height=800)
+        self.master.configure(bg='#717171')
+        self.master.title("EduBoard - Main")
+
         
+        labelEduboard = Label(self.master,text="EduBoard", font=("Comic Sans MS", 48),bg='#717171')
+        labelEduboard.grid(column=1,row=0,sticky='n')
+
+        username = Label(self.master,text=f"{user}", font=("Comic Sans MS", 38),bg='#717171')
+        username.grid(column=2,row=0,sticky='n',pady=10,padx=20)
+
+        self.functionality = LabelFrame(self.master, bg='#717171')
+        self.functionality.grid(row=1,column=1)
+
+        self.functionality.columnconfigure(0,weight=1)
+        self.functionality.rowconfigure(5,weight=1)
+
+        self.buttonAttendance = Button(self.functionality, text="Attendance",width=15,height=3, font=("Comic Sans MS", 18),bg='#717171')
+        self.buttonAttendance.grid(row=0,column=0)
+
+        self.buttonLookup = Button(self.functionality, text="Lookup",width=15,height=3, font=("Comic Sans MS", 18),bg='#717171')
+        self.buttonLookup.grid(row=1,column=0,pady=15)
+
+
+        
+
 
 def main(): 
     root = Tk()
     Login(root)
     root.mainloop()
     
+
 
 if __name__ == '__main__':
     main()
