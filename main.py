@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import sqlite3
-
+import hashlib
 
 
 con = sqlite3.connect("logins.db")
@@ -14,6 +14,7 @@ class Login:
         master.rowconfigure(6,weight=1)
         master.columnconfigure(0,weight=1)
         self.master.minsize(width=1200, height=800)
+        self.master.maxsize(width=1200, height=800)
         master.configure(bg='#717171')
         master.title("EduBoard - Login")
 
@@ -40,11 +41,15 @@ class Login:
         correctPassword = False
         correctUsername = False
 
+        encPassword = self.entryPass.get()
+        encUser = self.entryUser.get()
+        hashPassword = hashlib.md5(encPassword.encode()).hexdigest()
+        hashUser = hashlib.md5(encUser.encode()).hexdigest()
         for user in cur.execute("SELECT emails FROM logins").fetchall():
-            if user[0] == self.entryUser.get():
+            if user[0] == hashUser:
                 correctUsername = True
         for password in cur.execute("SELECT passwords FROM logins").fetchall():
-            if password[0] == self.entryPass.get():
+            if password[0] == hashPassword:
                 correctPassword = True
         if correctPassword and correctUsername == True:
             username = self.entryUser.get()
@@ -74,6 +79,7 @@ class Signup:
         master.rowconfigure(6,weight=1)
         master.columnconfigure(0,weight=1)
         self.master.minsize(width=1200, height=800)
+        self.master.maxsize(width=1200, height=800)
         master.configure(bg='#717171')
         master.title("EduBoard - Signup")
 
@@ -114,8 +120,12 @@ class Signup:
         elif self.entryPass.get() == "":
             messagebox.showerror("EduBoard","Cannot leave password empty. \nPlease try again or contact your administrator.")
         else:
+            encPassword = self.entryPass.get()
+            encUser = self.entryUser.get()
+            hashPassword = hashlib.md5(encPassword.encode()).hexdigest()
+            hashUser = hashlib.md5(encUser.encode()).hexdigest()
             cur.execute(f"""INSERT INTO logins VALUES
-                            ('{self.entryUser.get()}', '{self.entryUser.get()}')
+                            ('{hashUser}', '{hashPassword}')
                             """)
             con.commit()
             self.login_page()
@@ -133,6 +143,7 @@ class Landing:
         self.master.rowconfigure(6,weight=1)
         self.master.columnconfigure(2,weight=1)
         self.master.minsize(width=1200, height=800)
+        self.master.maxsize(width=1200, height=800)
         self.master.configure(bg='#717171')
         self.master.title("EduBoard - Main")
 
