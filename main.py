@@ -9,7 +9,7 @@ cur = con.cursor()
 
 
 class Login:
-    def __init__(self, master):
+    def __init__(self, master, offset = 2):
         self.master = master
         self.master.minsize(width=1200, height=800)
         self.master.maxsize(width=1200, height=800)
@@ -19,10 +19,10 @@ class Login:
         master.title("EduBoard - Login")
 
         self.eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#717171', )
-        self.eduboard.grid(column=2,row=2)
+        self.eduboard.grid(column=offset,row=2)
 
         self.loginFrame = LabelFrame(self.master,text="Login", font=("Quicksand Bold", 36),labelanchor='n',bg='#717171',width=5,height=5)
-        self.loginFrame.grid(column=2,row=3,sticky='n')
+        self.loginFrame.grid(column=offset,row=3,sticky='n')
         self.labelUser = Label(self.loginFrame,text="Email",justify='center',bg='#717171')
         self.labelUser.grid(column=0,row=2)
         self.entryUser = Entry(self.loginFrame,justify='center')
@@ -35,7 +35,7 @@ class Login:
         self.buttonLogin.grid(column=0,row=7)
         
         self.buttonSignuppage = Button(self.master, text="Don't have an account? Sign up.", command=self.open_signup, bg='#717171',bd=0)
-        self.buttonSignuppage.grid(column=2,row=4,pady=10)
+        self.buttonSignuppage.grid(column=offset,row=4,pady=10)
 
     def validate_login(self):
         correctPassword = False
@@ -56,6 +56,7 @@ class Login:
             self.eduboard.destroy()
             self.buttonSignuppage.destroy()
             self.loginFrame.destroy()
+            self.loggedout = True
             Landing(self.master,username)
         else:
             if self.entryPass.get() == "" and self.entryUser.get() == "":
@@ -71,11 +72,13 @@ class Login:
         self.loginFrame.destroy()
         self.buttonSignuppage.destroy()
         self.eduboard.destroy()
-        self.app = Signup(self.master)
-        
+        if self.loggedout == True:
+            Signup(self.master, 2)
+        else:
+            Signup(self.master, 0)
 
 class Signup:
-    def __init__(self, master):
+    def __init__(self, master, offset=2):
         self.master = master
         master.rowconfigure(6,weight=1)
         master.columnconfigure(2,weight=1)
@@ -85,10 +88,10 @@ class Signup:
         master.title("EduBoard - Signup")
 
         self.eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#717171')
-        self.eduboard.grid(column=2,row=0,sticky='n')
+        self.eduboard.grid(column=offset,row=0,sticky='n')
     
         self.loginFrame = LabelFrame(self.master,text="Sign Up", font=("Quicksand Bold", 24),labelanchor='n',bg='#717171')
-        self.loginFrame.grid(column=2,row=1,sticky='n')
+        self.loginFrame.grid(column=offset,row=1,sticky='n')
         self.labelUser = Label(self.loginFrame,text="Email",justify='center',bg='#717171')
         self.labelUser.grid(column=0,row=2)
         self.entryUser = Entry(self.loginFrame,justify='center')
@@ -101,7 +104,7 @@ class Signup:
         self.buttonSignup.grid(column=0,row=6)
 
         self.buttonLoginpage = Button(self.master, text="Go Back", command=self.login_page,bd=0,bg='#717171')
-        self.buttonLoginpage.grid(row=2,pady=10,column=2)
+        self.buttonLoginpage.grid(row=offset,pady=10,column=2)
 
     def create_account(self):
         dupEmail = False
@@ -184,7 +187,7 @@ class Landing:
         self.labelEduboard.destroy()
         self.functionality.destroy()    
         self.buttonHelp.destroy()
-        Login(self.master)
+        Login(self.master,3)
         
 
     def help_menu(self):
