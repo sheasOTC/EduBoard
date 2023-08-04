@@ -11,18 +11,18 @@ cur = con.cursor()
 class Login:
     def __init__(self, master):
         self.master = master
-        master.rowconfigure(6,weight=1)
-        master.columnconfigure(0,weight=1)
         self.master.minsize(width=1200, height=800)
         self.master.maxsize(width=1200, height=800)
+        master.rowconfigure(6,weight=1)
+        master.columnconfigure(2,weight=1)
         master.configure(bg='#717171')
         master.title("EduBoard - Login")
 
         self.eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#717171', )
-        self.eduboard.grid(column=0,row=0,sticky='n')
+        self.eduboard.grid(column=2,row=2)
 
-        self.loginFrame = LabelFrame(self.master,text="Login", font=("Quicksand Bold", 36),labelanchor='n',bg='#717171')
-        self.loginFrame.grid(column=0,row=1,sticky='n')
+        self.loginFrame = LabelFrame(self.master,text="Login", font=("Quicksand Bold", 36),labelanchor='n',bg='#717171',width=5,height=5)
+        self.loginFrame.grid(column=2,row=3,sticky='n')
         self.labelUser = Label(self.loginFrame,text="Email",justify='center',bg='#717171')
         self.labelUser.grid(column=0,row=2)
         self.entryUser = Entry(self.loginFrame,justify='center')
@@ -34,8 +34,8 @@ class Login:
         self.buttonLogin = Button(self.loginFrame,text="Login",command=self.validate_login,bg='#717171')
         self.buttonLogin.grid(column=0,row=7)
         
-        self.buttonSignuppage = Button(self.master, text='Sign up', command=self.open_signup, bg='#717171')
-        self.buttonSignuppage.grid(column=0,row=2,pady=10)
+        self.buttonSignuppage = Button(self.master, text="Don't have an account? Sign up.", command=self.open_signup, bg='#717171',bd=0)
+        self.buttonSignuppage.grid(column=2,row=4,pady=10)
 
     def validate_login(self):
         correctPassword = False
@@ -70,6 +70,7 @@ class Login:
     def open_signup(self):
         self.loginFrame.destroy()
         self.buttonSignuppage.destroy()
+        self.eduboard.destroy()
         self.app = Signup(self.master)
         
 
@@ -77,17 +78,17 @@ class Signup:
     def __init__(self, master):
         self.master = master
         master.rowconfigure(6,weight=1)
-        master.columnconfigure(0,weight=1)
+        master.columnconfigure(2,weight=1)
         self.master.minsize(width=1200, height=800)
         self.master.maxsize(width=1200, height=800)
         master.configure(bg='#717171')
         master.title("EduBoard - Signup")
 
-        eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#717171')
-        eduboard.grid(column=0,row=0,sticky='n')
+        self.eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#717171')
+        self.eduboard.grid(column=2,row=0,sticky='n')
     
         self.loginFrame = LabelFrame(self.master,text="Sign Up", font=("Quicksand Bold", 24),labelanchor='n',bg='#717171')
-        self.loginFrame.grid(column=0,row=1,sticky='n')
+        self.loginFrame.grid(column=2,row=1,sticky='n')
         self.labelUser = Label(self.loginFrame,text="Email",justify='center',bg='#717171')
         self.labelUser.grid(column=0,row=2)
         self.entryUser = Entry(self.loginFrame,justify='center')
@@ -99,8 +100,8 @@ class Signup:
         self.buttonSignup = Button(self.loginFrame,text="Sign Up",command=self.create_account,bg='#717171')
         self.buttonSignup.grid(column=0,row=6)
 
-        self.buttonLoginpage = Button(self.master, text="Go Back", command=self.login_page)
-        self.buttonLoginpage.grid(row=2,pady=10,column=0)
+        self.buttonLoginpage = Button(self.master, text="Go Back", command=self.login_page,bd=0,bg='#717171')
+        self.buttonLoginpage.grid(row=2,pady=10,column=2)
 
     def create_account(self):
         dupEmail = False
@@ -134,16 +135,16 @@ class Signup:
     def login_page(self):
         self.loginFrame.destroy()
         self.buttonLoginpage.destroy()
+        self.eduboard.destroy()
         Login(self.master)
 
 class Landing:
     def __init__(self, master, user):
         self.master = master
-
-        self.master.rowconfigure(6,weight=1)
-        self.master.columnconfigure(4,weight=1)
         self.master.minsize(width=1200, height=800)
         self.master.maxsize(width=1200, height=800)
+        self.master.rowconfigure(6,weight=1)
+        self.master.columnconfigure(4,weight=1)
         self.master.configure(bg='#717171')
         self.master.title("EduBoard - Main")
 
@@ -152,22 +153,25 @@ class Landing:
         self.labelEduboard.grid(column=0,row=0,sticky='n')
 
         self.username = Label(self.master,text=f"{user}", font=("Quicksand Bold", 38),bg='#717171')
-        self.username.grid(column=4,row=0,sticky='n',pady=10,padx=20)
+        self.username.grid(column=5,row=0,sticky='n',)
 
-        self.functionality = LabelFrame(self.master, bg='#717171')
-        self.functionality.grid(row=3,column=2)
+        self.functionality = Frame(self.master, bg='#717171',bd=0)
+        self.functionality.grid(row=3,column=3)
 
         self.functionality.columnconfigure(0,weight=1)
-        self.functionality.rowconfigure(4,weight=1)
+        self.functionality.rowconfigure(3,weight=1)
 
-        self.buttonAttendance = Button(self.functionality, text="Attendance",width=17,height=1, font=("Quicksand Bold", 18),bg='#717171')
+        self.buttonAttendance = Button(self.functionality, text="Attendance",width=17,height=1, font=("Quicksand Bold", 18),bg='#717171',pady=10)
         self.buttonAttendance.grid(row=0,column=0)
 
-        self.buttonLookup = Button(self.functionality, text="Lookup",width=15,height=1, font=("Quicksand Bold", 18),bg='#717171')
-        self.buttonLookup.grid(row=2,column=0)
+        self.buttonLookup = Button(self.functionality, text="Lookup",width=15,height=1, font=("Quicksand Bold", 18),bg='#717171',pady=5)
+        self.buttonLookup.grid(row=1,column=0)
 
-        self.buttonReports = Button(self.functionality, text="Reports",width=15,height=1, font=("Quicksand Bold", 18),bg='#717171')
-        self.buttonReports.grid(row=4,column=0)
+        self.buttonReports = Button(self.functionality, text="Reports",width=15,height=1, font=("Quicksand Bold", 18),bg='#717171',pady=5)
+        self.buttonReports.grid(row=2,column=0)
+
+        self.buttonSettings = Button(self.functionality, text='Settings',width=15,height=1, font=("Quicksand Bold", 18),bg='#717171',pady=5)
+        self.buttonSettings.grid(row=3,column=0)
 
         self.buttonLogout = Button(self.master,text="Logout",command=self.login_page, font=("Quicksand Bold", 18),bg='#717171')
         self.buttonLogout.grid(row=7,column=0,pady=50)
@@ -181,6 +185,7 @@ class Landing:
         self.functionality.destroy()    
         self.buttonHelp.destroy()
         Login(self.master)
+        
 
     def help_menu(self):
         help = Toplevel(self.master)
