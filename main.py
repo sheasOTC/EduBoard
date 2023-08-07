@@ -17,6 +17,7 @@ class Login:
         master.columnconfigure(2,weight=1)
         master.configure(bg='#717171')
         master.title("EduBoard - Login")
+        self.loggedin = False
 
         self.eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#717171', )
         self.eduboard.grid(column=offset,row=2)
@@ -40,7 +41,7 @@ class Login:
     def validate_login(self):
         correctPassword = False
         correctUsername = False
-
+        
         encPassword = self.entryPass.get()
         encUser = self.entryUser.get()
         hashPassword = hashlib.md5(encPassword.encode()).hexdigest()
@@ -56,7 +57,7 @@ class Login:
             self.eduboard.destroy()
             self.buttonSignuppage.destroy()
             self.loginFrame.destroy()
-            self.loggedout = True
+            self.loggedin = True
             Landing(self.master,username)
         else:
             if self.entryPass.get() == "" and self.entryUser.get() == "":
@@ -72,26 +73,21 @@ class Login:
         self.loginFrame.destroy()
         self.buttonSignuppage.destroy()
         self.eduboard.destroy()
-        if self.loggedout == True:
-            Signup(self.master, 2)
-        else:
-            Signup(self.master, 0)
+        Signup(self.master)
 
 class Signup:
-    def __init__(self, master, offset=2):
+    def __init__(self, master):
         self.master = master
-        master.rowconfigure(6,weight=1)
-        master.columnconfigure(2,weight=1)
         self.master.minsize(width=1200, height=800)
         self.master.maxsize(width=1200, height=800)
         master.configure(bg='#717171')
         master.title("EduBoard - Signup")
 
         self.eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#717171')
-        self.eduboard.grid(column=offset,row=0,sticky='n')
+        self.eduboard.grid(column=2,row=0,sticky='n')
     
         self.loginFrame = LabelFrame(self.master,text="Sign Up", font=("Quicksand Bold", 24),labelanchor='n',bg='#717171')
-        self.loginFrame.grid(column=offset,row=1,sticky='n')
+        self.loginFrame.grid(column=2,row=1,sticky='n')
         self.labelUser = Label(self.loginFrame,text="Email",justify='center',bg='#717171')
         self.labelUser.grid(column=0,row=2)
         self.entryUser = Entry(self.loginFrame,justify='center')
@@ -104,19 +100,22 @@ class Signup:
         self.buttonSignup.grid(column=0,row=6)
 
         self.buttonLoginpage = Button(self.master, text="Go Back", command=self.login_page,bd=0,bg='#717171')
-        self.buttonLoginpage.grid(row=offset,pady=10,column=2)
+        self.buttonLoginpage.grid(row=2,pady=10,column=2)
 
     def create_account(self):
         dupEmail = False
-        dupPass = False
+        dupPassword = False
+        hashPassword = hashlib.md5(self.entryPass.get().encode()).hexdigest()
+        hashUser = hashlib.md5(self.entryUser.get().encode()).hexdigest()
         for user in cur.execute("SELECT emails FROM logins").fetchall():
-            if user[0] == self.entryUser.get():
+            if user[0] == hashUser:
                 dupEmail = True
-        for password in cur.execute("SELECT passwords FROM logins").fetchall():
-            if password[0] == self.entryUser.get() :
-                dupPass = True
-        if dupEmail or dupPass:
+        if hashPassword == hashUser:
+            dupPassword = True
+        if dupEmail:
             messagebox.showerror('EduBoard', 'An account with this email already exists. \nPlease try again or contact your administrator.')
+        elif dupPassword:
+            messagebox.showerror('Eduboard', "Password cannot be the same as username, \nPlease try again or contact your administrator.")
         elif self.entryPass.get() == "" and self.entryUser.get() == "":
                 messagebox.showerror("EduBoard","Cannot leave password and email empty. \nPlease try again or contact your administrator.")
         elif self.entryUser.get() == "":
@@ -124,17 +123,12 @@ class Signup:
         elif self.entryPass.get() == "":
             messagebox.showerror("EduBoard","Cannot leave password empty. \nPlease try again or contact your administrator.")
         else:
-            encPassword = self.entryPass.get()
-            encUser = self.entryUser.get()
-            hashPassword = hashlib.md5(encPassword.encode()).hexdigest()
-            hashUser = hashlib.md5(encUser.encode()).hexdigest()
             cur.execute(f"""INSERT INTO logins VALUES
                             ('{hashUser}', '{hashPassword}')
                             """)
             con.commit()
             self.login_page()
             messagebox.showinfo("EduBoard", "Successfully Created Account.")
-    
     def login_page(self):
         self.loginFrame.destroy()
         self.buttonLoginpage.destroy()
@@ -187,8 +181,11 @@ class Landing:
         self.labelEduboard.destroy()
         self.functionality.destroy()    
         self.buttonHelp.destroy()
-        Login(self.master,3)
+        self.master.columnconfigure(0,weight=1)
+        Login(self.master)
         
+
+
 
     def help_menu(self):
         help = Toplevel(self.master)
@@ -199,8 +196,14 @@ def main():
     root = Tk()
     Login(root)
     root.mainloop()
-    
 
+try:
+    open("logins.db","x")
+    cur.execute("""CREATE TABLE 
+                logins(emails, passwords)""")
+    con.commit()
+except FileExistsError:
+    pass
 
 if __name__ == '__main__':
     main()
