@@ -78,9 +78,6 @@ class Create_User:
     def __init__(self, master,user):
         self.user = user
         self.master = master
-        self.master.minsize(width=1200, height=800)
-        self.master.maxsize(width=1200, height=800)
-        master.configure(bg='#0079b5')
         master.title("EduBoard - Signup")
 
         self.eduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
@@ -256,7 +253,7 @@ class Admin:
                                         font=("Quicksand Bold", 20),
                                         command=self.remove_user)
         self.buttonCreate_User.grid(column=3,row=0)
-        self.buttonRemove_User.destroy()
+        self.buttonRemove_User.grid(column=3,row=1)
         self.buttonBack = Button(self.master,text="Return", command=self.go_back, font=("Quicksand Bold", 12),bg='#0079b5')
         self.buttonBack.grid(column=4,row=2)
     def create_user(self):
@@ -268,7 +265,7 @@ class Admin:
         self.frameAdmin_Tools.destroy()
         self.buttonBack.destroy()
         self.labelEduboard.destroy()
-                               
+        Selection(self.master)
 
     def go_back(self):
         self.frameAdmin_Tools.destroy()
@@ -277,16 +274,26 @@ class Admin:
         Landing(self.master, self.user) 
 
 class Selection:
-    def __init__(self):
-        self.labelEduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5') 
-        self.labelEduboard.grid(column=4,row=0,padx=180)
+    def __init__(self,master):
+        self.master = master
+        self.master.columnconfigure(4,weight=1)
+        self.labelEduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
+        self.labelEduboard.grid(column=3,row=0,padx=180)
         frameSelection = Frame(self.master, bg='#0079b5',bd=0)
-        buttonRemove_User = Button(frameSelection,text="Remove User")
+        buttonRemove_User = Button(frameSelection,
+                                   text="Remove User",
+                                   command=self.remove_user,bd=0,
+                                   bg='#0079b5',
+                                   font=("Quicksand Bold", 20))
+        buttonRemove_User.grid(column=3,row=0)
+    def remove_user(self):
+        pass
+
 
 class Remove_User:
     def __init__(self):
         self.labelEduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5') 
-        self.labelEduboard.grid(column=4,row=0,padx=180)
+        self.labelEduboard.grid(column=4,row=0,)
 
 
 def main(): 
