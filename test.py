@@ -7,7 +7,12 @@ master.maxsize(width=1200, height=800)
 master.rowconfigure(5,weight=1)
 master.columnconfigure(2,weight=1)
 master.configure(bg='#0079b5')
-master.title("EduBoard - Settings")
+master.title("EduBoard - Attendance")
+
+
+
+con = sqlite3.connect("datebases\logins.db")
+cur = con.cursor()
 
 def personalise():
     pass
@@ -16,24 +21,24 @@ def administrator():
     pass
 
 
+labelEduBoard = Label(master, text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
+labelEduBoard.grid(column=4,row=0,)
 
-labelEduboard = Label(master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
-labelEduboard.grid(row=0,column=2)
+frameFunctions = Frame(master, bg='#0079b5',bd=0)
+frameFunctions.grid(column=4,row=1)
+buttonTake_Attendance = Button(frameFunctions, text="Take Attendance",
+                                   bd=0,
+                                   bg='#0079b5',
+                                   font=("Quicksand Bold", 20))
+buttonTake_Attendance.grid(column=4,row=0)
 
-#labelUser = Label(master, text=f"user", font=("Quicksand Bold", 48),bg='#0079b5')
-#labelUser.grid(row=0,coloumn=3)
+if cur.execute(f"SELECT administrator FROM logins WHERE emails = 'self.hashUser'").fetchone()[0] == True:
+    buttonCreate_Class = Button(frameFunctions, text="Create Class")
+    buttonCreate_Class.grid(row=1,column=4)
+    buttonConfigure_Class = Button(frameFunctions,text="Configure Class")
+    buttonConfigure_Class.grid(column=4,row=2)
 
-frameSettings = Frame(master, bg='#0079b5',bd=0)
-frameSettings.grid(row=1,column=2)
 
-buttonPersonalise = Button(frameSettings,text="Personalise", font=("Quicksand Bold", 24),bg='#0079b5',command=personalise, width=12,pady=5)
-buttonPersonalise.grid(row=0,column=2,pady=10)
-
-buttonAdministrator  = Button(frameSettings, text="Administrator", font=("Quicksand Bold", 24),bg='#0079b5',command=administrator,width=12,pady=5)
-buttonAdministrator.grid(row=1,column=2,pady=10)
-
-buttonBack = Button(master,text="Go Back",command="", font=("Quicksand Bold", 18),bg='#0079b5')
-buttonBack.grid(row=6,column=0)
 
 master.mainloop()
 

@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import sqlite3
 import hashlib
 import time
@@ -22,7 +22,7 @@ class Login:
         self.master = master
         self.master.minsize(width=1200, height=800)
         self.master.maxsize(width=1200, height=800)
-        self.master.resizable(False, False)
+        self.master.resizable(False, True)
         master.rowconfigure(6,weight=1)
         master.columnconfigure(4,weight=1)
         master.configure(bg='#0079b5')
@@ -50,11 +50,9 @@ class Login:
         correctUsername = False
         
         encPassword = self.entryPass.get()
-        encUser = self.entryUser.get()
         hashPassword = hashlib.md5(encPassword.encode()).hexdigest()
-        hashUser = hashlib.md5(encUser.encode()).hexdigest()
         for user in cur.execute("SELECT emails FROM logins").fetchall():
-            if user[0] == hashUser:
+            if user[0] == self.entryUser.get():
                 correctUsername = True
         for password in cur.execute("SELECT passwords FROM logins").fetchall():
             if password[0] == hashPassword:
@@ -104,11 +102,10 @@ class Create_User:
         dupEmail = False
         dupPassword = False
         hashPassword = hashlib.md5(self.entryPass.get().encode()).hexdigest()
-        hashUser = hashlib.md5(self.entryUser.get().encode()).hexdigest()
         for user in cur.execute("SELECT emails FROM logins").fetchall():
-            if user[0] == hashUser:
+            if user[0] == self.entryUser.get():
                 dupEmail = True
-        if hashPassword == hashUser:
+        if self.entryPass.get() == self.entryUser.get():
             dupPassword = True
         if dupEmail:
             messagebox.showerror('EduBoard', 'An account with this email already exists. \nPlease try again or contact your administrator.')
@@ -122,9 +119,10 @@ class Create_User:
             messagebox.showerror("EduBoard","Cannot leave password empty. \nPlease try again or contact your administrator.")
         else:
             cur.execute(f"""INSERT INTO logins VALUES
-                            ('{hashUser}', '{hashPassword}', False)
+                            ('{self.entryUser.get()}', '{hashPassword}', False)
                             """)
             con.commit()
+            print(self.entryUser.get())
             self.admin_page()
             messagebox.showinfo("EduBoard", "Successfully Created Account.")
     def admin_page(self):
@@ -152,7 +150,7 @@ class Landing:
         self.functionality.columnconfigure(0,weight=1)
         self.functionality.rowconfigure(3,weight=1)
 
-        self.buttonAttendance = Button(self.functionality, text="Attendance",width=15,height=1, font=("Quicksand Bold", 18),bg='#0079b5',pady=5)
+        self.buttonAttendance = Button(self.functionality, text="Attendance",width=15,height=1, font=("Quicksand Bold", 18),bg='#0079b5',pady=5,command=self.attendance)
         self.buttonAttendance.grid(row=0,column=0,pady=10)
 
         self.buttonLookup = Button(self.functionality, text="Lookup",width=15,height=1, font=("Quicksand Bold", 18),bg='#0079b5',pady=5)
@@ -183,12 +181,11 @@ class Landing:
 
     def help_menu(self):
         help = Toplevel(self.master)
-
-class Attendance:
-    def __init__(self):
-        self.labelEduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
-        self.labelEduboard.grid()
-
+    def attendance(self):
+        self.labelEduboard.destroy()
+        self.username.destroy()
+        self.functionality.destroy()
+        Attendance_Selection(self.master,self.user)
 class Lookup:
     def __init__(self):
         pass
@@ -203,33 +200,38 @@ class Admin_Login:
         self.master = master
         self.master.title("EduBoard - Admin")
         self.labelEduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5') 
-        self.labelEduboard.grid(column=4,row=0,padx=120)
-        self.buttonBack = Button(self.master,text="Go Back",command=self.go_back, font=("Quicksand Bold", 18),bg='#0079b5')
-        self.buttonBack.grid(row=7,column=4)
-        self.hashUser = hashlib.md5(self.user.encode()).hexdigest()
-        
-        if cur.execute(f"SELECT administrator FROM logins WHERE emails = '{self.hashUser}'").fetchone()[0] == False:
-            self.frameAdmin = Frame(self.master, bg='#0079b5',bd=0)
-            self.frameAdmin.grid(column=4,row=1,padx=120)
+        self.labelEduboard.grid(column=4,row=0,padx=240)
+        self.frameAdmin = Frame(self.master, bg='#0079b5',bd=0)
+        self.frameAdmin.grid(column=4,row=1,padx=120)
+        self.buttonBack = Button(self.frameAdmin,text="Go Back",command=self.go_back, font=("Quicksand Bold", 18),bg='#0079b5')
+        self.buttonBack.grid(row=3,column=3)        
+        if cur.execute(f"SELECT administrator FROM logins WHERE emails = '{self.user}'").fetchone()[0] == False:
             self.labelAdmin_password = Label(self.frameAdmin, text="Enter administrator password.",font=("Quicksand Bold", 12),bg='#0079b5')
             self.labelAdmin_password.grid(column=3,row=0)
             self.entryAdmin = Entry(self.frameAdmin,show='*',justify='center',width=24,bg='#0079b5')
             self.entryAdmin.grid(column=3,row=1)
-            self.buttonLogin = Button(self.frameAdmin, text="Login",bd=0,bg='#0079b5',command=self.admin_page)
+            self.buttonLogin = Button(self.frameAdmin, text="Login",bd=0,bg='#0079b5',command=self.validate_password)
             self.buttonLogin.grid(column=3,row=2)
         else:
             self.admin_page()
 
     def go_back(self):
         self.frameAdmin.destroy()
+        self.labelEduboard.destroy()
         Landing(self.master, self.user) 
+    def validate_password(self):
+        if self.entryAdmin.get() == "123":
+            self.admin_page()
+        else:
+            messagebox.showerror("EduBoard","Wrong password. \nPlease try again or contact your administrator.")
     def admin_page(self):
-        if cur.execute(f"SELECT administrator FROM logins WHERE emails = '{self.hashUser}'").fetchone()[0] == False:
+        if cur.execute(f"SELECT administrator FROM logins WHERE emails = '{self.user}'").fetchone()[0] == False:
             con.execute(f"""UPDATE logins
                             SET administrator = True
-                            WHERE emails = '{self.hashUser}'""")
+                            WHERE emails = '{self.user}'""")
             con.commit()
         self.labelEduboard.destroy()
+        self.frameAdmin.destroy()
         self.buttonBack.destroy()
         Admin(self.master,self.user)         
 class Admin:
@@ -265,7 +267,7 @@ class Admin:
         self.frameAdmin_Tools.destroy()
         self.buttonBack.destroy()
         self.labelEduboard.destroy()
-        Selection(self.master)
+        Remove_User(self.master, self.user)
 
     def go_back(self):
         self.frameAdmin_Tools.destroy()
@@ -273,31 +275,93 @@ class Admin:
         self.labelEduboard.destroy()
         Landing(self.master, self.user) 
 
-class Selection:
-    def __init__(self,master):
-        self.master = master
-        self.master.columnconfigure(4,weight=1)
-        self.labelEduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
-        self.labelEduboard.grid(column=3,row=0,padx=180)
-        frameSelection = Frame(self.master, bg='#0079b5',bd=0)
-        buttonRemove_User = Button(frameSelection,
-                                   text="Remove User",
-                                   command=self.remove_user,bd=0,
-                                   bg='#0079b5',
-                                   font=("Quicksand Bold", 20))
-        buttonRemove_User.grid(column=3,row=0)
-    def remove_user(self):
-        pass
-
 
 class Remove_User:
-    def __init__(self):
-        self.labelEduboard = Label(self.master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5') 
+    def __init__(self,master,user):
+        self.username = user
+        self.master = master
+        self.labelEduboard = Label(master,text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5') 
         self.labelEduboard.grid(column=4,row=0,)
+
+        users_list = cur.execute("SELECT emails FROM logins WHERE administrator = False").fetchall()
+        self.users = ttk.Treeview(master,columns='Emails', show="headings")
+        style = ttk.Style()
+        style.configure("Treeview",background='0079b5')
+        self.users.heading('Emails', text="Email")
+        self.users.column("Emails",anchor=CENTER , width=150)
+        for user in users_list:
+            print(user)
+            self.users.insert('',END, values=user)
+        self.users.grid(row=1,column=4)
+        self.scrollbar = Scrollbar(master, orient=VERTICAL, command=self.users.yview)
+        self.users.configure(yscroll=self.scrollbar.set)
+        self.scrollbar.grid(row=1,column=4,padx=160)
+        self.buttonDelete_User = Button(master, text="Delete User",
+                                    command=self.delete_user,
+                                    bd=0,
+                                    bg='#0079b5',
+                                    font=("Quicksand Bold", 20),)   
+        self.buttonDelete_User.grid(row=2,column=4)
+        self.buttonBack = Button(self.master,text="Return", command=self.go_back, font=("Quicksand Bold", 12),bg='#0079b5')
+        self.buttonBack.grid(column=4,row=3)
+    def delete_user(self):
+        for i in self.users.selection():
+            Failed = False
+            users = self.users.item(i)
+            user = users["values"][0]
+            cur.execute(f'DELETE FROM logins WHERE emails = "{user}"')
+            con.commit()
+        if Failed == False:
+            messagebox.showinfo("EduBoard", "Successfully Deleted User(s).")
+
+
+    def go_back(self):
+        self.users.destroy()
+        self.buttonBack.destroy()
+        self.labelEduboard.destroy()
+        self.scrollbar.destroy()
+        self.buttonDelete_User.destroy()
+        Admin(self.master,self.username)
+
+
+class Attendance_Selection:
+    def __init__(self,master,user):
+        self.master = master
+        self.user = user
+        master.title("EduBoard - Attendance")
+        self.labelEduBoard = Label(master, text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
+        self.labelEduBoard.grid(column=4,row=0,)
+
+        self.frameFunctions = Frame(master, bg='#0079b5',bd=0)
+        self.frameFunctions.grid(column=4,row=1)
+        buttonTake_Attendance = Button(self.frameFunctions, text="Take Attendance",
+                                        bd=0,
+                                        bg='#0079b5',
+                                        font=("Quicksand Bold", 20))
+        buttonTake_Attendance.grid(column=4,row=0)
+
+        if cur.execute(f"SELECT administrator FROM logins WHERE emails = '{self.user}'").fetchone()[0] == True:
+            buttonCreate_Class = Button(self.frameFunctions, text="Create Class",bd=0,
+                                        bg='#0079b5',
+                                        font=("Quicksand Bold", 20))
+            buttonCreate_Class.grid(row=1,column=4)
+            buttonConfigure_Class = Button(self.frameFunctions,text="Configure Class",bd=0,
+                                        bg='#0079b5',
+                                        font=("Quicksand Bold", 20))
+            buttonConfigure_Class.grid(column=4,row=2)
+        self.buttonBack = Button(self.frameFunctions,text="Go Back",command=self.go_back, font=("Quicksand Bold", 18),bg='#0079b5')
+        self.buttonBack.grid(column=4,row=3)
+
+    def go_back(self):
+        self.labelEduBoard.destroy()
+        self.frameFunctions.destroy()
+        Landing(self.master, self.user)
+
+
 
 
 def main(): 
-    root = Tk()
+    root = Tk()  
     Login(root)
     root.mainloop()
 
