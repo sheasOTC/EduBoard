@@ -1,46 +1,58 @@
-from tkinter import *
-import sqlite3
+try:
+    import tkinter as tk
+    from tkinter import ttk
+except ImportError:
+    import Tkinter as tk
+    import ttk
 
-master = Tk()
-master.minsize(width=1200, height=800)
-master.maxsize(width=1200, height=800)
-master.rowconfigure(5,weight=1)
-master.columnconfigure(2,weight=1)
-master.configure(bg='#0079b5')
-master.title("EduBoard - Attendance")
+from tkcalendar import Calendar, DateEntry
 
 
+def example1():
+    def print_sel():
+        print(cal.selection_get())
 
-con = sqlite3.connect("datebases\logins.db")
-cur = con.cursor()
+    top = tk.Toplevel(root)
 
-def personalise():
-    pass
+    cal = Calendar(top, font="Arial 14", selectmode='day', locale='en_US',
+                   cursor="hand1", year=2018, month=2, day=5)
 
-def administrator():
-    pass
-
-
-labelEduBoard = Label(master, text="EduBoard", font=("Quicksand Bold", 48),bg='#0079b5')
-labelEduBoard.grid(column=4,row=0,)
-
-frameFunctions = Frame(master, bg='#0079b5',bd=0)
-frameFunctions.grid(column=4,row=1)
-buttonTake_Attendance = Button(frameFunctions, text="Take Attendance",
-                                   bd=0,
-                                   bg='#0079b5',
-                                   font=("Quicksand Bold", 20))
-buttonTake_Attendance.grid(column=4,row=0)
-
-if cur.execute(f"SELECT administrator FROM logins WHERE emails = 'self.hashUser'").fetchone()[0] == True:
-    buttonCreate_Class = Button(frameFunctions, text="Create Class")
-    buttonCreate_Class.grid(row=1,column=4)
-    buttonConfigure_Class = Button(frameFunctions,text="Configure Class")
-    buttonConfigure_Class.grid(column=4,row=2)
+    cal.pack(fill="both", expand=True)
+    ttk.Button(top, text="ok", command=print_sel).pack()
 
 
+def example2():
 
-master.mainloop()
+    top = tk.Toplevel(root)
+
+    cal = Calendar(top, selectmode='none')
+    date = cal.datetime.today() + cal.timedelta(days=2)
+    cal.calevent_create(date, 'Hello World', 'message')
+    cal.calevent_create(date, 'Reminder 2', 'reminder')
+    cal.calevent_create(date + cal.timedelta(days=-2),
+                        'Reminder 1', 'reminder')
+    cal.calevent_create(date + cal.timedelta(days=3), 'Message', 'message')
+
+    cal.tag_config('reminder', background='red', foreground='yellow')
+
+    cal.pack(fill="both", expand=True)
+    ttk.Label(top, text="Hover over the events.").pack()
 
 
+def example3():
+    top = tk.Toplevel(root)
 
+    ttk.Label(top, text='Choose date').pack(padx=10, pady=10)
+
+    cal = DateEntry(top, width=12, background='darkblue',
+                    foreground='white', borderwidth=2, year=2010)
+    cal.pack(padx=10, pady=10)
+
+
+root = tk.Tk()
+ttk.Button(root, text='Calendar', command=example1).pack(padx=10, pady=10)
+ttk.Button(root, text='Calendar with events',
+           command=example2).pack(padx=10, pady=10)
+ttk.Button(root, text='DateEntry', command=example3).pack(padx=10, pady=10)
+
+root.mainloop()

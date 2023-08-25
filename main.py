@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox, ttk
 import sqlite3
 import hashlib
+from tkcalendar import Calendar, DateEntry
 
 # Connects to the logins.db
 con = sqlite3.connect("datebases\logins.db")
@@ -484,13 +485,21 @@ class Admin:
                                          command=self.create_user)
         self.button_create_user.grid(column=3, row=0)
 
+        self.button_create_student = Button(self.frame_admin_tools,
+                                            text="Create Student",
+                                            bd=0,
+                                            font=("Quicksand Bold", 20),
+                                            bg='#0079b5',
+                                            command=self.add_student)
+        self.button_create_student.grid(row=1, column=3)
+
         self.button_remove_user = Button(self.frame_admin_tools,
                                          text="Remove Teacher or Student",
                                          bd=0,
                                          bg='#0079b5',
                                          font=("Quicksand Bold", 20),
                                          command=self.remove_user)
-        self.button_remove_user.grid(column=3, row=1)
+        self.button_remove_user.grid(column=3, row=2)
 
         self.button_back = Button(self.master, text="Return", command=self.go_back, font=(
             "Quicksand Bold", 12), bg='#0079b5')
@@ -514,6 +523,15 @@ class Admin:
         self.label_eduboard.destroy()
         RemoveUser(self.master, self.user)
 
+    def add_student(self):
+        '''Retrives self parameter from __init__.
+        Destroys all widgets in the __init__ method.
+        Calls the Remove_User class.'''
+        self.frame_admin_tools.destroy()
+        self.button_back.destroy()
+        self.label_eduboard.destroy()
+        AddStudents(self.master, self.user)
+
     def go_back(self):
         '''Retrives self parameter from __init__.
         Deletes all widgets then runs "Landing" Class'''
@@ -521,6 +539,60 @@ class Admin:
         self.button_back.destroy()
         self.label_eduboard.destroy()
         Landing(self.master, self.user)
+
+
+class AddStudents:
+    def __init__(self, master, user):
+        self.master = master
+        self.user = user
+        self.label_eduboard = Label(master,
+                                    text="EduBoard",
+                                    font=("Quicksand Bold", 48),
+                                    bg='#0079b5')
+        self.label_eduboard.grid(column=4, row=0, sticky='N')
+
+        self.frame_details = LabelFrame(master,
+                                        bg='#0079b5',
+                                        bd=1,
+                                        text="Add Student",
+                                        font=("Quicksand Bold", 36))
+        self.frame_details.grid(column=4, row=1)
+
+        self.label_student_name = Label(self.frame_details,
+                                        bg='#0079b5',
+                                        font=("Quicksand Bold", 20),
+                                        text="*Student Name")
+        self.label_student_name.grid(row=0, column=1)
+
+        self.entry_student_first_name = Entry(self.frame_details,
+                                              bg='#0079b5',
+                                              width=16)
+        self.entry_student_first_name.grid(row=1)
+        self.entry_student_first_name.insert(0, string="First Name")
+
+        self.entry_student_last_name = Entry(self.frame_details,
+                                             bg='#0079b5',
+                                             width=16)
+        self.entry_student_last_name.grid(row=1, column=0)
+        self.entry_student_last_name.insert(0, string="Last Name")
+
+        self.label_student_dob = Label(self.frame_details,
+                                       bg='#0079b5',
+                                       font=("Quicksand Bold", 12),
+                                       text="Enter Date of Birth*")
+
+        self.label_student_dob.grid(row=2)
+
+        dateentry_student_dob = DateEntry(self.frame_details)
+        dateentry_student_dob.grid(row=3)
+
+        self.label_student_phnum = Label(self.frame_details,
+                                         text="Student Phone Number",
+                                         bg='#0079b5',
+                                         font=("Quicksand Bold", 12))
+        self.label_student_phnum.grid(row=4)
+
+        self.entry_student_phnum
 
 
 class RemoveUser:
@@ -545,9 +617,6 @@ class RemoveUser:
         self.treeview_emails = ttk.Treeview(self.frame_table,
                                             columns='Emails',
                                             show="headings")
-        style = ttk.Style(master,)
-        style.theme_use("alt")
-        style.configure("Treeview", background='#0079b5')
 
         self.treeview_emails.heading('Emails', text="Email")
         self.treeview_emails.column("Emails", anchor=CENTER, width=180)
@@ -616,12 +685,17 @@ class AttendanceSelection:
         self.master = master
         self.user = user
         master.title("EduBoard - Attendance")
-        self.label_eduboard = Label(master, text="EduBoard", font=(
-            "Quicksand Bold", 48), bg='#0079b5')
+        self.label_eduboard = Label(master,
+                                    text="EduBoard",
+                                    font=("Quicksand Bold", 48),
+                                    bg='#0079b5')
         self.label_eduboard.grid(column=4, row=0,)
 
-        self.frame_functions = Frame(master, bg='#0079b5', bd=0)
+        self.frame_functions = Frame(master,
+                                     bg='#0079b5',
+                                     bd=0)
         self.frame_functions.grid(column=4, row=1)
+
         button_take_attendance = Button(self.frame_functions,
                                         text="Take Attendance",
                                         bd=0,
@@ -631,12 +705,13 @@ class AttendanceSelection:
 
         if cur.execute(f"""SELECT administrator
                        FROM logins 
-                       WHERE emails = '{self.user}'""").fetchone()[0] is True:
+                       WHERE emails = '{self.user}'""").fetchone()[0] == True:
             button_create_class = Button(self.frame_functions,
                                          text="Create Class",
                                          bd=0,
                                          bg='#0079b5',
-                                         font=("Quicksand Bold", 20))
+                                         font=("Quicksand Bold", 20),
+                                         command=self.create_class)
             button_create_class.grid(row=1, column=4)
 
             button_configure_class = Button(self.frame_functions,
@@ -653,6 +728,11 @@ class AttendanceSelection:
                                   bg='#0079b5')
         self.button_back.grid(column=4, row=3)
 
+    def create_class(self):
+        self.label_eduboard.destroy()
+        self.frame_functions.destroy()
+        CreateClass(self.master, self.user)
+
     def go_back(self):
         '''Retrives self parameter from __init__.
         Deletes all widgets then runs "Landing" Class passing the master
@@ -660,6 +740,80 @@ class AttendanceSelection:
         self.label_eduboard.destroy()
         self.frame_functions.destroy()
         Landing(self.master, self.user)
+
+
+class Attendance:
+    """Allows users to take attendance for a class."""
+
+    def __init__(self, master):
+        pass
+
+
+class ConfigureClass:
+    def __init__(self, master):
+        pass
+
+
+class CreateClass:
+    def __init__(self, master, user):
+        self.master = master
+        self.user = user
+        conclasses = sqlite3.connect("datebases\classes.db")
+        self.curclasses = conclasses.cursor()
+
+        self.label_eduboard = Label(master,
+                                    text="EduBoard",
+                                    font=("Quicksand Bold", 48),
+                                    bg='#0079b5')
+        self.label_eduboard.grid(column=4, row=0,)
+
+        self.frame_functions = Frame(self.master,
+                                     bg='#0079b5',
+                                     bd=0)
+        self.frame_functions.grid(column=4, row=1)
+
+        self.label_class_name = Label(self.frame_functions,
+                                      font=("Quicksand Bold", 24),
+                                      bg='#0079b5',
+                                      text="Class Name")
+        self.label_class_name.grid(row=0)
+
+        self.entry_class_name = Entry(self.frame_functions,
+                                      font=("Quicksand Bold", 12),
+                                      width=18)
+        self.entry_class_name.grid(row=1)
+
+        self.button_select_students = Button(self.frame_functions,
+                                             text="Select Students",
+                                             bd=1,
+                                             bg='#0079b5',
+                                             font=("Quicksand Bold", 20),
+                                             command=self.select_students)
+        self.button_select_students.grid(row=2, pady=20)
+
+        self.button_back = Button(self.frame_functions,
+                                  text="Go Back",
+                                  command=self.go_back,
+                                  font=("Quicksand Bold", 18),
+                                  bg='#0079b5')
+        self.button_back.grid(row=3)
+
+    def select_students(self):
+        '''Retrives self parameter from __init__.
+        Deletes all widgets then runs "AttendanceSelection" Class passing the master
+        and user parameters.'''
+        self.frame_functions.destroy()
+        for c in self.curclasses(""):
+            pass
+            # if self.entry_class_name.get() ==
+
+    def go_back(self):
+        '''Retrives self parameter from __init__.
+        Deletes all widgets then runs "AttendanceSelection" Class passing the master
+        and user parameters.'''
+        self.label_eduboard.destroy()
+        self.frame_functions.destroy()
+        AttendanceSelection(self.master, self.user)
 
 
 def main():
