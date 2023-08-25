@@ -2,18 +2,35 @@ from tkinter import *
 from tkinter import messagebox, ttk
 import sqlite3
 import hashlib
-from tkcalendar import Calendar, DateEntry
+from tkcalendar import DateEntry
+import random
 
 # Connects to the logins.db
 con = sqlite3.connect("datebases\logins.db")
 cur = con.cursor()
 
+# Connects to the classes.db
+con_classes = sqlite3.connect("datebases\classes.db")
+cur_classes = con_classes.cursor()
+
+con_students = sqlite3.connect("datebases\students.db")
+cur_students = con_students.cursor()
+
 try:
     open("datebases\logins.db", "x")
+    open("datebases\students.db", "x")
 except FileExistsError:
     cur.execute("""CREATE TABLE IF NOT EXISTS
                 logins(emails, passwords, administrator)""")
     con.commit()
+
+    cur_students.execute("""CREATE TABLE IF NOT EXISTS
+                students(id, first_name, last_name, dob, phone_number, 
+                parent1_first_name, parent1_last_name, parent1_dob, parent2_phone number,
+                parent2_first_name, parent2_last_name, parent2_dob, parent2_phone_number,
+                emergency_first_name, emergency_last_name, emergency_phone_number)""")
+    con_students.commit()
+
 finally:
     pass
 
@@ -391,7 +408,7 @@ class AdminLogin:
                                   bg='#0079b5')
         self.button_back.grid(row=3, column=3)
 
-        if cur.execute(f"""SELECT administrator 
+        if cur.execute(f"""SELECT administrator
                        FROM logins 
                        WHERE emails = '{self.user}'""").fetchone()[0] is False:
             self.label_admin_password = Label(self.frame_admin,
@@ -548,7 +565,8 @@ class AddStudents:
         self.label_eduboard = Label(master,
                                     text="EduBoard",
                                     font=("Quicksand Bold", 48),
-                                    bg='#0079b5')
+                                    bg='#0079b5',
+                                    justify="center")
         self.label_eduboard.grid(column=4, row=0, sticky='N')
 
         self.frame_details = LabelFrame(master,
@@ -561,8 +579,8 @@ class AddStudents:
         self.label_student_name = Label(self.frame_details,
                                         bg='#0079b5',
                                         font=("Quicksand Bold", 20),
-                                        text="*Student Name")
-        self.label_student_name.grid(row=0, column=1)
+                                        text="Student Name*")
+        self.label_student_name.grid(row=0, padx=85)
 
         self.entry_student_first_name = Entry(self.frame_details,
                                               bg='#0079b5',
@@ -573,7 +591,7 @@ class AddStudents:
         self.entry_student_last_name = Entry(self.frame_details,
                                              bg='#0079b5',
                                              width=16)
-        self.entry_student_last_name.grid(row=1, column=0)
+        self.entry_student_last_name.grid(row=2, padx=85)
         self.entry_student_last_name.insert(0, string="Last Name")
 
         self.label_student_dob = Label(self.frame_details,
@@ -581,19 +599,44 @@ class AddStudents:
                                        font=("Quicksand Bold", 12),
                                        text="Enter Date of Birth*")
 
-        self.label_student_dob.grid(row=2)
+        self.label_student_dob.grid(row=3)
 
-        dateentry_student_dob = DateEntry(self.frame_details)
-        dateentry_student_dob.grid(row=3)
+        self.dateentry_student_dob = DateEntry(self.frame_details)
+        self.dateentry_student_dob.grid(row=4)
 
         self.label_student_phnum = Label(self.frame_details,
                                          text="Student Phone Number",
                                          bg='#0079b5',
                                          font=("Quicksand Bold", 12))
-        self.label_student_phnum.grid(row=4)
+        self.label_student_phnum.grid(row=5)
 
-        self.entry_student_phnum
+        self.entry_student_phnum = Entry(self.frame_details,
+                                         width=20)
+        self.entry_student_phnum.grid(row=6)
 
+        self.button_next = Button(self.frame_details,
+                                  bg='#0079b5',
+                                  font=("Quicksand Bold", 12),
+                                  text="Next",
+                                  command=self.parent_details)
+        self.button_next.grid(row=7)
+
+    def save_details(self):
+        id = random.randint(0,10000)
+        for i in cur_students.execute(f"""SELECT id FROM students""").fetchall():
+            if i == id:
+                id = random.randint(0,10000)
+        cur_students.execute(f"""INSERT INTO students VALUES(
+                             '{id}', '{self.entry_student_first_name.get()}', '{self.entry_student_last_name.get()}', '{self.dateentry_student_dob.get_date()}', '{self.entry_student_phnum.get()}',,
+                             '{self.entry_parent1_first_name}', '{self.entry_parent1_last_name}','{self.entry_parent1_dob}', '{self.entry_parent1_phnum}',
+                             '{self.entry_parent1_first_name}','{self.entry_parent1_first_name}','{self.entry_parent1_dob}','{self.entry_parent2_phnum}',
+                             '{self.entry_parent1_first_name}','{self.entry_parent1_first_name}','{self.entry_parent1_dob}','{self.entry_emergency_phnum}'
+        )""")
+        self.parent_details()
+    def parent_details(self):
+        self.frame_details.destroy()
+        
+        self.frame_parents_details = LabelFrame(self.master)
 
 class RemoveUser:
     '''Continues previous instance of Tk() replacing widgets that allows users to
@@ -704,7 +747,7 @@ class AttendanceSelection:
         button_take_attendance.grid(column=4, row=0)
 
         if cur.execute(f"""SELECT administrator
-                       FROM logins 
+                       FROM logins
                        WHERE emails = '{self.user}'""").fetchone()[0] == True:
             button_create_class = Button(self.frame_functions,
                                          text="Create Class",
@@ -758,8 +801,7 @@ class CreateClass:
     def __init__(self, master, user):
         self.master = master
         self.user = user
-        conclasses = sqlite3.connect("datebases\classes.db")
-        self.curclasses = conclasses.cursor()
+        
 
         self.label_eduboard = Label(master,
                                     text="EduBoard",
