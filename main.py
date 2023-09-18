@@ -750,10 +750,13 @@ class RemoveUser:
             entity = "Student"
             self.treeview_entities = ttk.Treeview(self.frame_table,
                                                   columns=(
-                                                      "ID", "First_Name", "Surname"),
+                                                      "ID", "Year", "First_Name", "Surname"),
                                                   show="headings")
             self.treeview_entities.heading('ID', text="ID")
             self.treeview_entities.column("ID", anchor=CENTER, width=40)
+            self.treeview_entities.heading('Year', text="Year")
+            self.treeview_entities.column(
+                "Year", anchor=CENTER, width=80)
             self.treeview_entities.heading('First_Name', text="First Name")
             self.treeview_entities.column(
                 "First_Name", anchor=CENTER, width=80)
@@ -822,7 +825,8 @@ class RemoveUser:
         Iterates through logins.db then displays all rows in the email colomn
         into treeview_entities'''
         if self.student:
-            student_data = cur_students.execute("SELECT * FROM students")
+            student_data = cur_students.execute(
+                "SELECT id, year, first_name, last_name  FROM students ")
             for i in self.treeview_entities.get_children():
                 self.treeview_entities.delete(i)
             for student in student_data:
@@ -869,7 +873,8 @@ class AttendanceSelection:
                                         text="Take Attendance",
                                         bd=0,
                                         bg='#0079b5',
-                                        font=("Quicksand Bold", 20))
+                                        font=("Quicksand Bold", 20),
+                                        command=self.take_attendance)
         button_take_attendance.grid(column=4, row=0)
 
         if cur.execute(f"""SELECT administrator
@@ -902,6 +907,11 @@ class AttendanceSelection:
         self.frame_functions.destroy()
         CreateClass(self.master, self.user)
 
+    def take_attendance(self):
+        self.label_eduboard.destroy()
+        self.frame_functions.destroy()
+        Attendance(self.master, self.user)
+
     def go_back(self):
         '''Retrives self parameter from __init__.
         Deletes all widgets then runs "Landing" Class passing the master
@@ -913,9 +923,61 @@ class AttendanceSelection:
 
 class Attendance:
     """Allows users to take attendance for a class."""
+    # peg
 
-    def __init__(self, master):
-        pass
+    def __init__(self, master, user):
+        self.master = master
+        self.user = user
+        master.title("EduBoard - Attendance")
+        self.label_eduboard = Label(master,
+                                    text="EduBoard",
+                                    font=("Quicksand Bold", 48),
+                                    bg='#0079b5')
+        self.label_eduboard.grid(column=4, row=0)
+
+        self.frame_functions = Frame(self.master, bd=0)
+
+        print(cur_classes.execute("""SELECT name FROM sqlite_master  
+        WHERE type='table';""").fetchall())
+        self.treeview_classes = ttk.Treeview(self.frame_functions,
+                                             columns=("Classes"),
+                                             show="headings")
+        self.treeview_classes.heading('Classes', text="Classes")
+        self.treeview_classes.column(
+            "Classes", anchor=CENTER, width=40)
+        for cl in cur_classes.execute("""SELECT name FROM sqlite_master  
+        WHERE type='table';""").fetchall():
+            self.treeview_classes.insert(
+                "", END, values=cl)
+        self.treeview_classes.grid(ipadx=86)
+        self.button_take_attendance = Button(self.frame_functions,
+                                             text="Select Students",
+                                             bd=1,
+                                             bg='#0079b5',
+                                             font=("Quicksand Bold", 20),
+                                             command=self.take_attendance)
+        self.button_take_attendance.grid(row=1)
+        self.button_go_back = Button(self.frame_functions,
+                                     text="Go Back",
+                                     bd=1, bg='#0079b5',
+                                     font=("Quicksand Bold", 18),
+                                     command=self.go_back)
+        self.button_go_back.grid(row=2)
+        self.frame_functions.grid(row=1, column=4)
+
+    def take_attendance(self):
+        class_selected = self.treeview_classes.item(
+            self.treeview_classes.selection())
+        self.frame_functions.destroy()
+        print(class_selected['values'][0])
+
+    def go_back(self):
+        '''Retrives self parameter from __init__.
+        Deletes all widgets then runs "AttendanceSelection" Class passing the master
+        and user parameters.'''
+        self.label_eduboard.destroy()
+        self.frame_functions.destroy()
+        AttendanceSelection(self.master, self.user)
 
 
 class ConfigureClass:
@@ -1102,10 +1164,8 @@ class CreateClass:
         for s in self.treeview_students_unavaliable.selection():
             student = self.treeview_students_unavaliable.item(s)['values']
             if (f'{student[0]}', student[1], student[2], student[3]) not in self.avaliable_list:
-                print(self.avaliable_list, 1)
                 self.avaliable_list.append(
                     (f'{student[0]}', f'{student[1]}', student[2], student[3]))
-                print(self.avaliable_list)
                 self.insert_values()
 
     def create_class(self):
@@ -1113,25 +1173,19 @@ class CreateClass:
             messagebox.showerror(
                 "EduBoard", "Please add students to the class.")
         else:
-            class_name = f"{self.class_name}_{self.class_year_level}_{datetime.date.today().year}"
-            try:
-                amount_students = []
-                values = []
-                for amount in range(len(self.student_list)):
-                    amount_students.append(amount)
-                    values.append("?")
-                ','.join(values)
-                print(amount_students)
-                for student in self.student_list:
-                    cur_classes.execute(
-                        f"CREATE TABLE {class_name}({amount_students})")
-                    print(student)
-                cur_classes.executemany(
-                    f"INSERT INTO {class_name} VALUES ({values})", self.student_list,)
-                con_classes.commit()
-            except sqlite3.OperationalError:
-                messagebox.showerror(
-                    "EduBoard", "Class name already exists\n Please give class a different name.")
+            class_name = f'{self.class_name}_{self.class_year_level}_{datetime.date.today().year}'
+            student_id = []
+            for stu in self.student_list:
+                student_id.append(stu[0])
+            cur_classes.execute(
+                f"""CREATE TABLE IF NOT EXISTS 
+                '{class_name}'('{self.user}')""")
+            for id in student_id:
+                cur_classes.execute(f"""ALTER TABLE '{class_name}'
+                                    ADD '{id}'""")
+            con_classes.commit()
+            messagebox.showinfo("EduBoard", "Succesfully created class.")
+            self.go_back()
 
     def go_back(self):
         '''Retrives self parameter from __init__.
