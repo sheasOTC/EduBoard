@@ -935,7 +935,7 @@ class Attendance:
                                     bg='#0079b5')
         self.label_eduboard.grid(column=4, row=0)
 
-        self.frame_functions = Frame(self.master, bd=0)
+        self.frame_functions = Frame(self.master, bd=0,bg='#0079b5')
 
         print(cur_classes.execute("""SELECT name FROM sqlite_master  
         WHERE type='table';""").fetchall())
@@ -966,10 +966,19 @@ class Attendance:
         self.frame_functions.grid(row=1, column=4)
 
     def take_attendance(self):
+        student_list = list()
         class_selected = self.treeview_classes.item(
             self.treeview_classes.selection())
-        self.frame_functions.destroy()
-        print(class_selected['values'][0])
+        class_select = class_selected['values'][0]
+        print(class_select)
+
+        
+        ids = list(map(lambda x: x[0], cur_classes.execute(f'select * from {class_select}').description))
+        ids.pop(0)
+        for id in ids:
+            students = cur_students.execute(f"SELECT year, first_name, last_name FROM students WHERE id = '{id}'").fetchall()
+            student_list.append(students)
+        print(student_list)
 
     def go_back(self):
         '''Retrives self parameter from __init__.
