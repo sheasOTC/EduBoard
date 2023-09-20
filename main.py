@@ -964,21 +964,49 @@ class Attendance:
                                      command=self.go_back)
         self.button_go_back.grid(row=2)
         self.frame_functions.grid(row=1, column=4)
+        
 
     def take_attendance(self):
+        self.buttons = list()
         student_list = list()
-        class_selected = self.treeview_classes.item(
-            self.treeview_classes.selection())
+        class_selected = self.treeview_classes.item(self.treeview_classes.selection())
         class_select = class_selected['values'][0]
-        print(class_select)
-
-        
+        self.frame_functions.destroy()
         ids = list(map(lambda x: x[0], cur_classes.execute(f'select * from {class_select}').description))
         ids.pop(0)
         for id in ids:
             students = cur_students.execute(f"SELECT year, first_name, last_name FROM students WHERE id = '{id}'").fetchall()
             student_list.append(students)
-        print(student_list)
+        self.frame_functions2 = Frame(self.master,bd=0,bg='#0079b5')
+        self.treeview_students = ttk.Treeview(self.frame_functions2,columns=("Year","First Name", "Last Name"), show="headings")
+        self.treeview_students.heading('Year', text="Year")
+        self.treeview_students.column(
+            "Year", anchor=CENTER, width=40)
+        self.treeview_students.heading('First Name', text="First Name")
+        self.treeview_students.column(
+            "First Name", anchor=CENTER, width=40)
+        self.treeview_students.heading('Last Name', text="Last Name")
+        self.treeview_students.column(
+            "Last Name", anchor=CENTER, width=40)
+        for student in student_list:
+            self.treeview_students.insert(
+                "", END, values=student[0])
+            
+        v = StringVar(self.master, "1") 
+        attendance_options = {"P" : "1",
+                              "L" : "2",
+                              "U" : "3",
+                              "J" : "4",
+                              "O" : "5"}
+        
+        for idx, (text, mode) in attendance_options.items():
+            self.buttons.append(StringVar(value="1"))
+            self.buttons.append(Radiobutton(self.frame_functions2,padx=20, pady=10,font=('arial', 20, "bold"), bd=4, text=text, variable=self.buttons[-1], value=mode, indicatoron=0))
+            self.buttons[-1].grid(row=0, column=idx) 
+	        
+        self.treeview_students.grid(ipadx=43)
+        self.frame_functions2.grid(row=1,column=4)
+        
 
     def go_back(self):
         '''Retrives self parameter from __init__.
