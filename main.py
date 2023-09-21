@@ -935,7 +935,7 @@ class Attendance:
                                     bg='#0079b5')
         self.label_eduboard.grid(column=4, row=0)
 
-        self.frame_functions = Frame(self.master, bd=0,bg='#0079b5')
+        self.frame_functions = Frame(self.master, bd=0, bg='#0079b5')
 
         print(cur_classes.execute("""SELECT name FROM sqlite_master  
         WHERE type='table';""").fetchall())
@@ -951,7 +951,7 @@ class Attendance:
                 "", END, values=cl)
         self.treeview_classes.grid(ipadx=86)
         self.button_take_attendance = Button(self.frame_functions,
-                                             text="Select Students",
+                                             text="Select Class",
                                              bd=1,
                                              bg='#0079b5',
                                              font=("Quicksand Bold", 20),
@@ -964,21 +964,24 @@ class Attendance:
                                      command=self.go_back)
         self.button_go_back.grid(row=2)
         self.frame_functions.grid(row=1, column=4)
-        
 
     def take_attendance(self):
         self.buttons = list()
         student_list = list()
-        class_selected = self.treeview_classes.item(self.treeview_classes.selection())
+        class_selected = self.treeview_classes.item(
+            self.treeview_classes.selection())
         class_select = class_selected['values'][0]
         self.frame_functions.destroy()
-        ids = list(map(lambda x: x[0], cur_classes.execute(f'select * from {class_select}').description))
+        ids = list(map(lambda x: x[0], cur_classes.execute(
+            f'select * from {class_select}').description))
         ids.pop(0)
         for id in ids:
-            students = cur_students.execute(f"SELECT year, first_name, last_name FROM students WHERE id = '{id}'").fetchall()
+            students = cur_students.execute(
+                f"SELECT year, first_name, last_name FROM students WHERE id = '{id}'").fetchall()
             student_list.append(students)
-        self.frame_functions2 = Frame(self.master,bd=0,bg='#0079b5')
-        self.treeview_students = ttk.Treeview(self.frame_functions2,columns=("Year","First Name", "Last Name"), show="headings")
+        self.frame_functions2 = Frame(self.master, bd=0, bg='#0079b5')
+        self.treeview_students = ttk.Treeview(self.master, columns=(
+            "Year", "First Name", "Last Name"), show="headings")
         self.treeview_students.heading('Year', text="Year")
         self.treeview_students.column(
             "Year", anchor=CENTER, width=40)
@@ -991,22 +994,32 @@ class Attendance:
         for student in student_list:
             self.treeview_students.insert(
                 "", END, values=student[0])
-            
-        v = StringVar(self.master, "1") 
-        attendance_options = {"P" : "1",
-                              "L" : "2",
-                              "U" : "3",
-                              "J" : "4",
-                              "O" : "5"}
-        
-        for idx, (text, mode) in attendance_options.items():
-            self.buttons.append(StringVar(value="1"))
-            self.buttons.append(Radiobutton(self.frame_functions2,padx=20, pady=10,font=('arial', 20, "bold"), bd=4, text=text, variable=self.buttons[-1], value=mode, indicatoron=0))
-            self.buttons[-1].grid(row=0, column=idx) 
-	        
-        self.treeview_students.grid(ipadx=43)
-        self.frame_functions2.grid(row=1,column=4)
-        
+
+        v = StringVar(self.master, "1")
+        attendance_options = {"P": "1",
+                              "L": "2",
+                              "U": "3",
+                              "J": "4",
+                              "O": "5"}
+        posy = 0
+        posx = 0
+        self.frame_functions2.rowconfigure(30)
+        for students in range(len(student_list)):
+            for (text, mode) in attendance_options.items():
+                posx += 1
+                self.buttons.append(StringVar(value="1"))
+                self.buttons.append(Radiobutton(self.frame_functions2, padx=10, font=(
+                    'arial', 10, ), bd=4, text=text, variable=self.buttons[-1], value=mode, bg="#0079b5"))
+                # Adds radiobuttons to a list to be easily accessed
+
+                self.buttons[-1].grid(row=posy,
+                                      column=posx)
+                if len(self.buttons) % 10 == 0:  # Checks if it is a new row of radio buttons
+                    posy += 1
+                    posx = 0
+
+        self.treeview_students.grid(ipadx=43, row=0)
+        self.frame_functions2.grid(row=1, column=4)
 
     def go_back(self):
         '''Retrives self parameter from __init__.
