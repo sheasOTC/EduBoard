@@ -691,46 +691,54 @@ class AddStudents:
             self.frame_details.destroy()
             self.label_eduboard.destroy()
             self.button_go_back.destroy()
-            self.__init__(self.master, self.user, self.variable, self.new_instance, self.details)
+            self.__init__(self.master, self.user, self.variable,
+                          self.new_instance, self.details)
         if self.entry_last_name.get() == "Last Name":
             messagebox.showerror("EduBoard", "Please enter a last name")
             self.frame_details.destroy()
             self.label_eduboard.destroy()
             self.button_go_back.destroy()
-            self.__init__(self.master, self.user, self.variable, self.new_instance, self.details)
+            self.__init__(self.master, self.user, self.variable,
+                          self.new_instance, self.details)
         if self.entry_phnum.get() == "":
             messagebox.showerror("EduBoard", "Please enter a phone number")
             self.frame_details.destroy()
             self.label_eduboard.destroy()
             self.button_go_back.destroy()
-            self.__init__(self.master, self.user, self.variable, self.new_instance, self.details)
+            self.__init__(self.master, self.user, self.variable,
+                          self.new_instance, self.details)
         if not isinstance(int(self.entry_phnum.get()), int) or len(self.entry_phnum.get()) < 9 or len(self.entry_phnum.get()) > 12:
             messagebox.showerror("EduBoard", """Please enter a valid phone number\n
                                  For example (022 1234 123)""")
             self.frame_details.destroy()
             self.label_eduboard.destroy()
             self.button_go_back.destroy()
-            self.__init__(self.master, self.user, self.variable, self.new_instance, self.details)
+            self.__init__(self.master, self.user, self.variable,
+                          self.new_instance, self.details)
         try:
             if self.entry_year.get() == "Year":
                 messagebox.showerror("EduBoard", "Please enter a year")
                 self.frame_details.destroy()
                 self.label_eduboard.destroy()
                 self.button_go_back.destroy()
-                self.__init__(self.master, self.user, self.variable, self.new_instance, self.details)
-            if not isinstance(int(self.entry_year.get()),int):
+                self.__init__(self.master, self.user, self.variable,
+                              self.new_instance, self.details)
+            if not isinstance(int(self.entry_year.get()), int):
                 messagebox.showerror("""EduBoard", "Please enter a valid year\n
                                     For example (12)""")
                 self.frame_details.destroy()
                 self.label_eduboard.destroy()
                 self.button_go_back.destroy()
-                self.__init__(self.master, self.user, self.variable, self.new_instance, self.details)
+                self.__init__(self.master, self.user, self.variable,
+                              self.new_instance, self.details)
             if int(self.entry_year.get()) < 9 or int(self.entry_year.get()) > 13:
-                messagebox.showerror("EduBoard", "Please enter a year between 9 - 13")
+                messagebox.showerror(
+                    "EduBoard", "Please enter a year between 9 - 13")
                 self.frame_details.destroy()
                 self.label_eduboard.destroy()
                 self.button_go_back.destroy()
-                self.__init__(self.master, self.user, self.variable, self.new_instance, self.details)
+                self.__init__(self.master, self.user, self.variable,
+                              self.new_instance, self.details)
         except TclError:
             pass
         id = random.randint(0, 10000)
@@ -739,12 +747,13 @@ class AddStudents:
         if len(self.details) == 0:
             self.details.append(str(id))
             self.details.append(str(self.entry_year.get()))
-        if len(self.details) > 1: # Adds all details to self.details
+        if len(self.details) > 1:  # Adds all details to self.details
             self.details.append(self.entry_first_name.get())
             self.details.append(self.entry_last_name.get())
             self.details.append(self.dateentry_dob.get())
             self.details.append(self.entry_phnum.get())
-            if (self.variable.get() * 4 + 6) == len(self.details): # Appened None to details if there arent 3 guardians selected
+            # Appened None to details if there arent 3 guardians selected
+            if (self.variable.get() * 4 + 6) == len(self.details):
                 while len(self.details) is not 18:
                     self.details.append('None')
                 cur_students.executemany(
@@ -1042,32 +1051,50 @@ class Attendance:
         for student in student_list:
             self.treeview_students.insert(
                 "", END, values=student[0])
-            
-        attendance_options = {"P": "1",
-                              "L": "2",
-                              "U": "3",
-                              "J": "4",
-                              "O": "5"}
+
+        attendance_options = {"P": "P",
+                              "L": "L",
+                              "U": "U",
+                              "J": "J",
+                              "O": "O"}
         posy = 0
         posx = 0
         self.frame_functions2.rowconfigure(30)
+        var = StringVar(value="")
+        self.var_list = []
 
         for students in range(len(student_list)):
+            self.buttons.append(StringVar())
             for (text, mode) in attendance_options.items():
                 posx += 1
-                self.buttons.append(StringVar(value=""))
-                self.buttons.append(Radiobutton(self.frame_radio_buttons, padx=10, font=(
-                    'arial', 10, ), bd=4, text=text, variable=self.buttons[-1], value=mode, bg="#0079b5"))
-                # Adds radiobuttons to a list to be easily accessed
-                self.buttons[-1].grid(row=posy,
-                                      column=posx)
-                if len(self.buttons) % 10 == 0:  # Checks if it is a new row of radio buttons
-                    posy += 1
-                    posx = 0
+                self.buttons.append(Radiobutton(self.frame_radio_buttons, padx=5, font=(
+                    'arial', 10, ), bd=4, text=text, variable=self.buttons[students], value=mode, bg="#0079b5"))  # self.var is not a change varalible so all other radio buttons with the same value duplicates the selection
+                self.buttons[-1].grid(row=students, column=posx)
+            print(self.var_list)
+            posx = 0
 
-        self.treeview_students.grid(ipadx=43,row=0)
-        self.frame_functions2.grid(row=1, column=4)
-        self.frame_radio_buttons.grid(row=1,column=4,sticky="NE")
+        button_save_attendance = Button(self.frame_functions2,
+                                        text="Save Attendance",
+                                        bd=1, bg='#0079b5',
+                                        font=("Quicksand Bold", 18),
+                                        command=self.save_attendance)
+        button_save_attendance.grid(row=1)
+
+        self.button_go_back = Button(self.frame_functions2,
+                                     text="Go Back",
+                                     bd=1, bg='#0079b5',
+                                     font=("Quicksand Bold", 18),
+                                     command=self.go_back)
+        self.button_go_back.grid(row=2)
+
+        self.treeview_students.grid(ipadx=43, row=0)
+        self.frame_functions2.grid(row=1, column=3)
+        self.frame_radio_buttons.grid(row=1, column=4, sticky="NE")
+
+    def save_attendance(self):
+        for i in range(len(self.buttons)):
+            if not i % 6:
+                print(self.buttons[i].get())
 
     def go_back(self):
         '''Retrives self parameter from __init__.
@@ -1075,6 +1102,8 @@ class Attendance:
         and user parameters.'''
         self.label_eduboard.destroy()
         self.frame_functions.destroy()
+        self.frame_functions2.destroy()
+        self.frame_radio_buttons.destroy()
         AttendanceSelection(self.master, self.user)
 
 
