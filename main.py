@@ -697,7 +697,7 @@ class AddStudents:
                             self.variable,
                             self.new_instance, 
                             self.details)
-        except TclError:
+        except:
             pass
         id = random.randint(0, 10000) # Randomly generates IDs runs again if ID is taken
         while cur_students.execute(f"""SELECT id 
@@ -1182,28 +1182,53 @@ class CreateClass:
     def select_students(self):
         '''Retrives self parameter from __init__.
         Deletes all widgets then runs "AttendanceSelection" Class passing the master
-        and user parameters.'''
+        and user parameters.''' 
         if self.entry_class_name.get() == "":
             messagebox.showerror("EduBoard", 
                                  "Please give the class a name")
             self.frame_functions.destroy()
             self.label_eduboard.destroy()
-            self.__init__(self.master, self.user)
-        if self.entry_year_level.get() == "":
+            CreateClass(self.master, self.user)
+        self.class_name = self.entry_class_name.get()
+        self.class_db = f'{self.class_name}_{self.entry_year_level.get()}_{datetime.date.today().year}'
+        try:
+            # Runs command to see if it runs an error, if it doesn't it displays error
+            trail = len(cur_classes.execute(f"""SELECT *
+                                FROM {self.class_db}""").fetchall())
             messagebox.showerror("EduBoard", 
-                                 "Please enter a year level")
+                            f"Please {self.class_name} is already in use, Please use another")
             self.frame_functions.destroy()
             self.label_eduboard.destroy()
-            self.__init__(self.master, self.user)
-
+            CreateClass(self.master, self.user)
+        except sqlite3.OperationalError:
+            pass
+        if self.entry_year_level.get() == "":
+            messagebox.showerror("EduBoard", 
+                                 "Please enter a year level\nFor example years 9 - 13")
+            self.frame_functions.destroy()
+            self.label_eduboard.destroy()
+            CreateClass(self.master, self.user)
+        if isinstance(int(self.entry_year_level.get()), int) is False:
+            messagebox.showerror("EduBoard", 
+                                 "Please enter a valid year level\nFor example years 9 - 13")
+            self.frame_functions.destroy()
+            self.label_eduboard.destroy()
+            CreateClass(self.master, self.user)
+        if int(self.entry_year_level.get()) < 9 or int(self.entry_year_level.get()) > 13:
+            messagebox.showerror("EduBoard", 
+                                 "Please enter a valid year level\nFor example years 9 - 13")
+            self.frame_functions.destroy()
+            self.label_eduboard.destroy()
+            CreateClass(self.master, self.user)
+        
         else:
             avaliable = cur_students.execute(
                 f"""SELECT id, year ,first_name,last_name 
-                FROM students where year = '{self.entry_year_level.get()}'""").fetchall()
+                FROM students 
+                where year = '{self.entry_year_level.get()}'""").fetchall()
             self.avaliable_list = list()
             for row in avaliable:
                 self.avaliable_list.append(row)
-            self.class_name = self.entry_class_name.get()
             self.class_year_level = self.entry_year_level.get()
             self.frame_functions.destroy()
 
@@ -1298,16 +1323,15 @@ class CreateClass:
                 "EduBoard", "Please add students to the class.")
         else:
             # Gets class name, year level and current date for formating in the database
-            class_name = f'{self.class_name}_{self.class_year_level}_{datetime.date.today().year}'
             student_id = []
             for stu in self.student_list:
                 student_id.append(stu[0])
             cur_classes.execute(
                 f"""CREATE TABLE IF NOT EXISTS 
-                '{class_name}'('{self.user}')""")
+                '{self.class_db}'('{self.user}')""")
             # Creates more columns in a table and adds the ids of the student
             for id in student_id:
-                cur_classes.execute(f"""ALTER TABLE '{class_name}'
+                cur_classes.execute(f"""ALTER TABLE '{self.class_db}'
                                     ADD '{id}'""")
             con_classes.commit()
             messagebox.showinfo("EduBoard", "Succesfully created class.")
